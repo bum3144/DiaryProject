@@ -7,6 +7,9 @@ Delete: 일기를 삭제
 '''
 
 import sqlite3
+from tabulate import tabulate
+# pip install tabulate
+# tabulate 라이브러리를 사용하여 표형식으로 출력
 
 def read_all_diaries():
     try:
@@ -20,9 +23,11 @@ def read_all_diaries():
 
         # 글 출력
         if rows:
-            print("저장된 일기 목록:")
-            for row in rows:
-                print(f"ID: {row[0]}, 제목: {row[1]}, 내용: {row[2]}, 사진 경로: {row[3]}, 날짜: {row[4]}")
+            # print("저장된 일기 목록:")
+            # for row in rows:
+            #     print(f"ID: {row[0]}, 제목: {row[1]}, 내용: {row[2]}, 사진 경로: {row[3]}, 날짜: {row[4]}")
+            headers = ["ID", "Title", "Content", "Photo Path", "Date"]
+            print(tabulate(rows, headers=headers, tablefmt="grid"))
         else:
             print("저장된 일기가 없습니다.")
 
