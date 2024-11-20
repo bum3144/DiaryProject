@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS diary (
     title TEXT NOT NULL,
     content TEXT,
     photo TEXT,
-    data TEXT NOT NULL
+    date TEXT NOT NULL
 );
 """
 # 실행
