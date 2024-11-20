@@ -1,22 +1,9 @@
-'''
-import sqlite3
-# sqlite2 버전 확인
-print(sqlite3.sqlite_version)
-
-from PIL import Image
-# Pillow 설치 확인
-print("Pillow is working!")
-'''
-
-'''
 # db 파일(diary.db)이 제대로 생성되고 접근 가능한지 확인
-'''
-
 import sqlite3
 import os
 
 # db 파일 경로
-db_file = "diary.db"
+db_file = "../diary.db"
 
 '''
 # db 파일 존재 여부 확인
@@ -27,7 +14,6 @@ else:
     exit()
 '''
 
-'''
 # db 연결 테스트
 try:
     conn = sqlite3.connect(db_file)
@@ -43,4 +29,3 @@ except sqlite3.Error as e:
 finally:
     conn.close()
     print("db 연결 종료.")
-'''
