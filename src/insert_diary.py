@@ -26,22 +26,20 @@ def insert_diary(title, content, photo_filename, date):
         # # 사진 파일이 저장될 경로를 설정
         # photo_path = os.path.join(image_folder, photo_filename)
 
-        # 저장될 경로를 설정
-        file_basename, file_extension = os.path.splitext(os.path.basename(photo_filename))  # 파일 이름과 확장자 분리
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")  # 타임스탬프 생성
-        unique_filename = f"{file_basename}_{timestamp}{file_extension}"  # 고유 파일 이름 생성
-        dest_photo_path = os.path.join(image_folder, unique_filename)
+        # 이미지 경로 처리
+        if photo_filename and os.path.exists(photo_filename):
+            # 타임스탬프를 추가한 유니크한 파일 이름 생성
+            file_basename, file_extension = os.path.splitext(os.path.basename(photo_filename))
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            unique_filename = f"{file_basename}_{timestamp}{file_extension}"
+            dest_photo_path = os.path.join(image_folder, unique_filename)
 
-        # 사진 파일 복사
-        # 사진 파일이 images 폴더로 복사되며, db에는 복사된 파일의 경로가 저장
-        # if os.path.exists(source_photo_path):
-        #     shutil.copy(source_photo_path, dest_photo_path)
-        # else:
-        #     print(f"사진 파일이 존재하지 않습니다: {source_photo_path}")
-        #     return
-        if os.path.exists(photo_filename):
+            # 이미지 파일 복사
             with open(photo_filename, "rb") as source, open(dest_photo_path, "wb") as destination:
                 destination.write(source.read())
+        else:
+            # 이미지를 선택하지 않았을 경우 경로를 빈 문자열로 설정
+            dest_photo_path = ""
 
         # db 연결
         # conn = sqlite3.connect("../diary.db")
@@ -51,10 +49,10 @@ def insert_diary(title, content, photo_filename, date):
         conn = sqlite3.connect(os.path.join(project_root, "diary.db"))
         cursor = conn.cursor()
 
-        # # 마지막 ID를 조회하여 다음 ID 설정
-        # cursor.execute("SELECT MAX(id) FROM diary;")
-        # last_id = cursor.fetchone()[0] or 0  # None일 경우 0으로 처리
-        # next_id = last_id + 1
+        # 마지막 ID를 조회하여 다음 ID 설정
+        cursor.execute("SELECT MAX(id) FROM diary;")
+        last_id = cursor.fetchone()[0] or 0  # None일 경우 0으로 처리
+        next_id = last_id + 1
 
         # SQL
         insert_query = """

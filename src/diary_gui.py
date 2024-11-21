@@ -8,12 +8,14 @@ filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사�
 import tkinter as tk
 import datetime
 from tkinter import filedialog
+from tkinter import messagebox  # 경고 창을 위한 모듈
 from tkcalendar import Calendar
 from src.insert_diary import insert_diary
 from src.read_all_diaries import read_all_diaries
 from src.read_diary_by_date import read_diary_by_date
 from src.update_diary import update_diary
 from src.delete_diary import delete_diary
+from src.read_diary_by_id import read_diary_by_id
 
 
 def create_main_window():
@@ -30,6 +32,18 @@ def create_main_window():
     main_frame = tk.Frame(root)
     main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
+    # 초기화 함수
+    def clear_fields():
+        id_entry.config(state="normal")  # ID 필드 잠금 해제
+        id_entry.delete(0, tk.END)  # ID 필드 내용 삭제
+        id_entry.config(state="readonly")  # 다시 읽기 전용으로 설정
+
+        title_entry.delete(0, tk.END)  # 제목 필드 초기화
+        content_text.delete("1.0", tk.END)  # 내용 필드 초기화
+        date_entry.delete(0, tk.END)  # 날짜 필드 초기화
+        image_path_entry.delete(0, tk.END)  # 이미지 경로 필드 초기화
+        result_text.delete("1.0", tk.END)  # 결과 텍스트 창 초기화
+
     # 버튼 함수 정의
     def handle_insert():
         title = title_entry.get()
@@ -39,22 +53,15 @@ def create_main_window():
         if not date:
             date = datetime.datetime.now().strftime("%Y-%m-%d")
         if not title or not date:
-            result_text.insert(tk.END, "제목과 날짜는 필수 입력 항목입니다.\n")
+            result_text.insert(tk.END, f"제목과 내용은 필수 입력 항목입니다.(날짜 미입력시 오늘 날짜 자동저장)\n")
             return
         try:
             insert_diary(title, content, photo_filename, date)
-            result_text.insert(tk.END, "새 일기가 성공적으로 추가되었습니다!\n")
+            result_text.insert(tk.END, f"새 일기가 성공적으로 추가되었습니다!\n")
+
             clear_fields()
         except Exception as e:
             result_text.insert(tk.END, f"일기 추가 중 오류 발생: {e}\n")
-
-    # def handle_read_all():
-    #     try:
-    #         clear_result_text()
-    #         result = read_all_diaries()
-    #         result_text.insert(tk.END, result + "\n")
-    #     except Exception as e:
-    #         result_text.insert(tk.END, f"전체 일기 조회 중 오류 발생: {e}\n")
 
     def handle_read_all():
         try:
@@ -117,71 +124,57 @@ def create_main_window():
         open_calendar_for_search()
 
     def handle_update():
-        # diary_id = id_entry.get()
-        # 일기 수정 시 ID는 내부적으로 관리
-        diary_id = None  # 내부적으로 선택된 ID를 가져오는 로직 필요
+        diary_id = id_entry.get()  # ID를 가져옴
         new_title = title_entry.get()
         new_content = content_text.get("1.0", tk.END).strip()
         new_date = date_entry.get()
+        new_photo = image_path_entry.get()
 
-        if not diary_id:
-            result_text.insert(tk.END, "수정할 일기를 선택해주세요.\n")
+        # ID 확인
+        if not diary_id or not diary_id.isdigit():
+            result_text.insert(tk.END, "조회 후 수정할 일기를 선택해 주세요.\n")
             return
 
+        # 수정할 데이터 확인
         if not new_title and not new_content and not new_date:
-            result_text.insert(tk.END, "수정할 일기를 입력해주세요.\n")
+            result_text.insert(tk.END, "수정할 데이터를 입력해주세요.\n")
             return
 
-        try:
-            update_diary(diary_id, new_title, new_content, None, new_date)
-            result_text.insert(tk.END, f"ID {diary_id}의 일기가 수정되었습니다.\n")
-            clear_fields()
-        except Exception as e:
-            result_text.insert(tk.END, f"일기 수정 중 오류 발생: {e}\n")
-
-    # def handle_delete():
-    #     diary_id = id_entry.get()
-    #     if not diary_id or not diary_id.isdigit():
-    #         result_text.insert(tk.END, "삭제할 ID를 정확히 입력해주세요.\n")
-    #         return
-    #     try:
-    #         delete_diary(int(diary_id))
-    #         result_text.insert(tk.END, f"ID {diary_id}의 일기가 삭제되었습니다.\n")
-    #         clear_fields()
-    #     except Exception as e:
-    #         result_text.insert(tk.END, f"일기 삭제 중 오류 발생: {e}\n")
-    def handle_delete():
-        def open_delete_selection():
-            # 삭제할 ID를 선택하는 새로운 창 생성
-            selection_window = tk.Toplevel(root)
-            selection_window.title("삭제할 일기 선택")
-            selection_window.geometry("400x300")
-
+        # 경고 창 띄움
+        confirm = messagebox.askyesno("수정 확인", f"ID {diary_id}의 일기를 수정하시겠습니까?")
+        if confirm:  # "네" 선택 시
             try:
-                # 저장된 일기 데이터 조회
-                diaries = read_all_diaries()
-                if not diaries:  # 반환값이 빈 리스트일 경우 처리
-                    tk.Label(selection_window, text="삭제할 일기가 없습니다.").pack()
-                    return
-
-                # 데이터 출력 및 삭제 버튼 생성
-                for diary in diaries:
-                    if len(diary) == 5:  # 데이터가 올바른지 확인 (5개 필드: ID, 제목, 내용, 사진, 날짜)
-                        diary_id, diary_title, _, _, diary_date = diary
-                        diary_summary = f"ID: {diary_id}, 제목: {diary_title}, 날짜: {diary_date}"
-                        tk.Button(
-                            selection_window,
-                            text=diary_summary,
-                            command=lambda id=diary_id: [delete_diary(id), selection_window.destroy()]
-                        ).pack(fill=tk.X, pady=2)
-                    else:
-                        # 데이터 손상 시 메시지 표시
-                        tk.Label(selection_window, text="일기 데이터가 손상되었습니다.").pack()
+                # DB 업데이트 호출
+                update_diary(int(diary_id), new_title, new_content, new_photo, new_date)
+                result_text.insert(tk.END, f"ID {diary_id}의 일기가 성공적으로 수정되었습니다.\n")
+                clear_fields()  # 입력 필드 초기화
+                handle_read_all()  # 수정 후 전체 리스트 새로고침
             except Exception as e:
-                tk.Label(selection_window, text=f"일기 조회 중 오류 발생: {e}").pack()
+                result_text.insert(tk.END, f"일기 수정 중 오류 발생: {e}\n")
+        else:  # "아니오" 선택 시
+            result_text.insert(tk.END, "수정 작업이 취소되었습니다.\n")
 
-        # 삭제 창 열기
-        open_delete_selection()
+    def handle_delete():
+        # ID 필드에서 값을 가져옴
+        diary_id = id_entry.get()
+
+        # ID가 없거나 잘못된 값일 경우
+        if not diary_id or not diary_id.isdigit():
+            result_text.insert(tk.END, "조회 후 삭제할 일기를 선택해 주세요.\n")
+            return
+
+        # 경고 창을 띄움
+        confirm = messagebox.askyesno("삭제 확인", f"ID {diary_id}의 일기를 삭제하시겠습니까?")
+        if confirm:  # 사용자가 네 를 선택했을 경우
+            try:
+                delete_diary(int(diary_id))  # 삭제 함수 호출
+                result_text.insert(tk.END, f"ID {diary_id}의 일기가 성공적으로 삭제되었습니다.\n")
+                clear_fields()  # 입력 필드 초기화
+                handle_read_all()  # 삭제 후 전체 리스트 새로고침
+            except Exception as e:
+                result_text.insert(tk.END, f"일기 삭제 중 오류 발생: {e}\n")
+        else:
+            result_text.insert(tk.END, "삭제 작업이 취소되었습니다.\n")  # 아니오 선택 시 메시지 출력
 
     # 추가 유틸리티 함수
     def open_calendar():
@@ -201,22 +194,68 @@ def create_main_window():
         image_path_entry.delete(0, tk.END)
         image_path_entry.insert(0, photo_filename)
 
-    def clear_fields():
-        id_entry.delete(0, tk.END)
-        title_entry.delete(0, tk.END)
-        content_text.delete("1.0", tk.END)
-        date_entry.delete(0, tk.END)
-        image_path_entry.delete(0, tk.END)
+    # def clear_fields():
+    #     id_entry.delete(0, tk.END)
+    #     title_entry.delete(0, tk.END)
+    #     content_text.delete("1.0", tk.END)
+    #     date_entry.delete(0, tk.END)
+    #     image_path_entry.delete(0, tk.END)
 
     def clear_result_text():
         result_text.delete("1.0", tk.END)
 
+    def on_result_enter(event):
+        result_text.config(cursor="hand2")  # hand2는 손가락 모양의 커서
+
+    def on_result_leave(event):
+        result_text.config(cursor="")  # 기본 커서로 복원
+    def on_result_click(event):
+        try:
+            clicked_index = result_text.index(f"@{event.x},{event.y}")
+            clicked_line = result_text.get(clicked_index + " linestart", clicked_index + " lineend").strip()
+
+            # 테이블 헤더나 구분선 제외
+            if clicked_line.startswith("ID") or clicked_line.startswith("=") or clicked_line.startswith("-"):
+                return
+
+            # 데이터 파싱
+            diary_id = clicked_line[:15].strip()  # ID: 처음 15자
+            title = clicked_line[15:70].strip()  # 제목: 15~70자
+            date = clicked_line[70:].strip()  # 날짜: 70자 이후
+
+            # 필드에 데이터 로드
+            id_entry.config(state="normal")
+            id_entry.delete(0, tk.END)
+            id_entry.insert(0, diary_id)
+            id_entry.config(state="readonly")
+
+            title_entry.delete(0, tk.END)
+            title_entry.insert(0, title)
+
+            date_entry.delete(0, tk.END)
+            date_entry.insert(0, date)
+
+            # 내용 및 이미지 경로 로드
+            diary_data = read_diary_by_id(int(diary_id))
+            if diary_data:
+                content_text.delete("1.0", tk.END)
+                content_text.insert("1.0", diary_data['content'])
+
+                image_path_entry.delete(0, tk.END)
+                image_path_entry.insert(0, diary_data['photo'])
+            else:
+                result_text.insert(tk.END, "선택한 데이터의 세부 정보를 찾을 수 없습니다.\n")
+        except Exception as e:
+            result_text.insert(tk.END, f"데이터 파싱 중 오류 발생: {e}\n")
+
     # 버튼 추가
-    tk.Button(top_frame, text="새 일기 작성", command=handle_insert).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(top_frame, text="새 일기 저장", fg="green", command=handle_insert).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(top_frame, text="전체 일기 조회", command=handle_read_all).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(top_frame, text="특정 날짜 조회", command=handle_read_by_date).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(top_frame, text="수정", command=handle_update).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(top_frame, text="삭제", command=handle_delete).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(top_frame, text="수정하기", fg="blue", command=handle_update).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(top_frame, text="삭제하기", fg="red", command=handle_delete).pack(side=tk.LEFT, padx=5, pady=5)
+    # 취소 버튼 추가
+    tk.Button(top_frame, text="취소하기", command=clear_fields).pack(side=tk.LEFT, padx=5, pady=5)
 
     # 입력 필드 구성
     # ID 입력 필드 제거 : ID는 시스템 내부적으로 사용되며, 사용자가 볼 필요가 없기에 비공개처리
@@ -264,7 +303,9 @@ def create_main_window():
     # 결과 출력 텍스트 창
     result_text = tk.Text(main_frame, width=100, height=15)
     result_text.grid(row=5, column=0, columnspan=3, padx=5, pady=5)
-
+    result_text.bind("<Button-1>", on_result_click) # 클릭 이벤트 처리
+    result_text.bind("<Enter>", on_result_enter)  # 마우스가 위젯에 들어올 때 커서 변경
+    result_text.bind("<Leave>", on_result_leave)  # 마우스가 위젯에서 나갈 때 커서 복원
     root.mainloop()
 
 
