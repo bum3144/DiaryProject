@@ -5,12 +5,12 @@ Create: 새로운 일기 추가
 Update: 기존 일기를 수정
 Delete: 일기를 삭제
 '''
-
 import sqlite3
+from src.database_connection import get_db_connection
 
 def read_diary_by_date(date):
     try:
-        conn = sqlite3.connect("../diary.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         # 특정 날짜의 일기 조회 하기
@@ -29,7 +29,8 @@ def read_diary_by_date(date):
     except sqlite3.Error as e:
         print(f"일기를 조회 중에 오류 발생: {e}")
     finally:
-        conn.close()
+        if conn:  # conn이 None이 아닌 경우에만 close 호출
+            conn.close()
 
 # # 테스트 코드
 # 빠른 테스트를 위해 하단에 배치하여 개발 중 바로 바로 테스트 하기위해 유지

@@ -6,12 +6,19 @@ Update: 기존 일기를 수정
 * Delete: 일기를 삭제
 '''
 import sqlite3
+from src.database_connection import get_db_connection
 
 # 특정 ID의 데이터를 삭제
 def delete_diary(diary_id):
     try:
-        conn = sqlite3.connect("../diary.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
+
+        # 삭제 전 확인 후 삭제하도록 처리
+        confirm = input(f"ID {diary_id}의 일기를 삭제하시겠습니까? (y/n): ")
+        if confirm.lower() != "y":
+            print("삭제 작업이 취소되었습니다.")
+            return
 
         # 일기 삭제 쿼리
         delete_query = "DELETE FROM diary WHERE id = ?;"
@@ -27,13 +34,20 @@ def delete_diary(diary_id):
     except sqlite3.Error as e:
         print(f"일기 삭제 중 오류 발생: {e}")
     finally:
-        conn.close()
+        if conn:  # conn이 None이 아닌 경우에만 close 호출
+            conn.close()
 
 # 날짜별로 데이터를 삭제
 def delete_diaries_by_date(date):
     try:
-        conn = sqlite3.connect("../diary.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
+
+        # 삭제 전 확인
+        confirm = input(f"{date}의 모든 일기를 삭제하시겠습니까? (y/n): ")
+        if confirm.lower() != "y":
+            print("삭제 작업이 취소되었습니다.")
+            return
 
         # 날짜별 삭제 쿼리
         delete_query = "DELETE FROM diary WHERE date = ?;"
@@ -49,7 +63,8 @@ def delete_diaries_by_date(date):
     except sqlite3.Error as e:
         print(f"일기 삭제 중 오류 발생: {e}")
     finally:
-        conn.close()
+        if conn:  # conn이 None이 아닌 경우에만 close 호출
+            conn.close()
 
 
 
@@ -62,7 +77,7 @@ def delete_diaries_by_date(date):
 
 if __name__ == "__main__":
     # 삭제 테스트
-    delete_diary(1)  # 삭제하려는 ID를 지정
+    delete_diary(3)  # 삭제하려는 ID를 지정
 
 # if __name__ == "__main__":
 #     # 특정 날짜 일기 삭제 테스트
