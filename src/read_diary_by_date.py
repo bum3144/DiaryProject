@@ -13,24 +13,18 @@ def read_diary_by_date(date):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # 특정 날짜의 일기 조회 하기
-        select_query = "SELECT * FROM diary WHERE date = ?;"
-        cursor.execute(select_query, (date,))
-        rows = cursor.fetchall()
-
-        # 일기 출력
-        if rows:
-            headers = ["ID", "Title", "Content", "Photo Path", "Date"]
-            return tabulate(rows, headers=headers, tablefmt="grid")
-        else:
-            print(f"{date}에 저장된 일기가 없습니다.")
-
+        query = "SELECT id, title, content, photo, date FROM diary WHERE date = ?;"
+        cursor.execute(query, (date,))
+        results = cursor.fetchall()
+        # print("DEBUG: 조회된 데이터:", results)  # 반환값 출력
+        return results
     except sqlite3.Error as e:
-        print(f"일기를 조회 중에 오류 발생: {e}")
+        print(f"데이터베이스 오류: {e}")
+        return []
     finally:
-        if conn:  # conn이 None이 아닌 경우에만 close 호출
+        if conn:
             conn.close()
+
 
 # # 테스트 코드
 # 빠른 테스트를 위해 하단에 배치하여 개발 중 바로 바로 테스트 하기위해 유지
