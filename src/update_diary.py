@@ -9,7 +9,7 @@ import sqlite3
 
 def update_diary(diary_id, title=None, content=None, photo=None, date=None):
     try:
-        conn = sqlite3.connect("diary.db")
+        conn = sqlite3.connect("../diary.db")
         cursor = conn.cursor()
 
         # 수정

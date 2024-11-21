@@ -1,11 +1,11 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import filedialog
 import os
-from insert_diary import insert_diary
-from read_all_diaries import read_all_diaries
-from read_diary_by_date import read_diary_by_date
-from update_diary import update_diary
-from delete_diary import delete_diary
+from src.insert_diary import insert_diary
+from src.read_all_diaries import read_all_diaries
+from src.read_diary_by_date import read_diary_by_date
+from src.update_diary import update_diary
+from src.delete_diary import delete_diary
 """
 Tkinter 메뉴얼 : https://docs.python.org/3/library/tkinter.html
 tkinter: Tkinter 라이브러리를 사용해 화면창 구현

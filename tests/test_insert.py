@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # test를 위해서 상위 폴더 경로 추가
 
-from insert_diary import insert_diary
+from src.insert_diary import insert_diary
 """
  # TEST시에 insert_diary.py파일 수정하고 해야함  conn = sqlite3.connect("../diary.db")
 """

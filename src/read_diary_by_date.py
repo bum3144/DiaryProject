@@ -10,7 +10,7 @@ import sqlite3
 
 def read_diary_by_date(date):
     try:
-        conn = sqlite3.connect("diary.db")
+        conn = sqlite3.connect("../diary.db")
         cursor = conn.cursor()
 
         # 특정 날짜의 일기 조회 하기

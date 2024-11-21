@@ -7,6 +7,7 @@ Delete: 일기를 삭제
 '''
 import sqlite3
 import os
+import datetime  # 타임스탬프 생성에 사용
 import shutil
 # shutil 파일 복사를 위한 모듈
 
@@ -26,8 +27,10 @@ def insert_diary(title, content, photo_filename, date):
         # photo_path = os.path.join(image_folder, photo_filename)
 
         # 저장될 경로를 설정
-        source_photo_path = photo_filename
-        dest_photo_path = os.path.join(image_folder, os.path.basename(photo_filename))
+        file_basename, file_extension = os.path.splitext(os.path.basename(photo_filename))  # 파일 이름과 확장자 분리
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")  # 타임스탬프 생성
+        unique_filename = f"{file_basename}_{timestamp}{file_extension}"  # 고유 파일 이름 생성
+        dest_photo_path = os.path.join(image_folder, unique_filename)
 
         # 사진 파일 복사
         # 사진 파일이 images 폴더로 복사되며, db에는 복사된 파일의 경로가 저장
@@ -81,5 +84,5 @@ if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # 샘플 데이터 삽입
     test_photo_path = os.path.join(project_root, "dog.jpg")
-    insert_diary("테스트 사진 자동 복사 테스트", "사진 파일을 자동으로 복사합니다.", test_photo_path, "2024-11-22")
+    insert_diary("타임스탬프 테스트2", "사진 파일에 타임스탬프 추가2.", test_photo_path, "2024-11-23")
 

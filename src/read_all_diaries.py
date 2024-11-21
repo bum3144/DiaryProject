@@ -13,7 +13,7 @@ from tabulate import tabulate
 
 def read_all_diaries():
     try:
-        conn = sqlite3.connect("diary.db")
+        conn = sqlite3.connect("../diary.db")
         cursor = conn.cursor()
 
         # 모든 글 조회하는 쿼리

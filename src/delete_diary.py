@@ -10,7 +10,7 @@ import sqlite3
 # 특정 ID의 데이터를 삭제
 def delete_diary(diary_id):
     try:
-        conn = sqlite3.connect("diary.db")
+        conn = sqlite3.connect("../diary.db")
         cursor = conn.cursor()
 
         # 일기 삭제 쿼리
@@ -32,7 +32,7 @@ def delete_diary(diary_id):
 # 날짜별로 데이터를 삭제
 def delete_diaries_by_date(date):
     try:
-        conn = sqlite3.connect("diary.db")
+        conn = sqlite3.connect("../diary.db")
         cursor = conn.cursor()
 
         # 날짜별 삭제 쿼리
