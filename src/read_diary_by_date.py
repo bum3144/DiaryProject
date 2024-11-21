@@ -6,6 +6,7 @@ Update: 기존 일기를 수정
 Delete: 일기를 삭제
 '''
 import sqlite3
+from tabulate import tabulate
 from src.database_connection import get_db_connection
 
 def read_diary_by_date(date):
@@ -20,9 +21,8 @@ def read_diary_by_date(date):
 
         # 일기 출력
         if rows:
-            print(f"{date}에 저장된 일기 목록:")
-            for row in rows:
-                print(f"ID: {row[0]}, 제목: {row[1]}, 내용: {row[2]}, 사진 경로: {row[3]}, 날짜: {row[4]}")
+            headers = ["ID", "Title", "Content", "Photo Path", "Date"]
+            return tabulate(rows, headers=headers, tablefmt="grid")
         else:
             print(f"{date}에 저장된 일기가 없습니다.")
 

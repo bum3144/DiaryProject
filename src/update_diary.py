@@ -46,16 +46,15 @@ def update_diary(diary_id, title=None, content=None, photo=None, date=None):
                 params.append(dest_photo_path)
                 updates.append("photo = ?")  # photo 업데이트 쿼리에 추가
             else:
-                print(f"사진 파일이 존재하지 않습니다: {source_photo_path}")
-                return
+                return f"사진 파일이 존재하지 않습니다: {source_photo_path}"
+
         if date:
             updates.append("date = ?")
             params.append(date)
 
         # 업데이트 쿼리 생성
         if not updates:
-            print("수정할 데이터가 없습니다.")
-            return
+            return "수정할 데이터가 없습니다."
 
         # 업데이트 쿼리
         updates_query = ", ".join(updates)
@@ -67,12 +66,12 @@ def update_diary(diary_id, title=None, content=None, photo=None, date=None):
         conn.commit()
 
         if cursor.rowcount > 0:
-            print(f"ID {diary_id}의 일기가 수정되었습니다!")
+            return f"ID {diary_id}의 일기가 성공적으로 수정되었습니다."
         else:
-            print(f"ID {diary_id}에 해당하는 일기가 없습니다.")
+            return f"ID {diary_id}에 해당하는 일기가 없습니다."
 
     except sqlite3.Error as e:
-        print(f"일기 수정 중 오류 발생: {e}")
+        return f"일기 수정 중 오류 발생: {e}"
     finally:
         if conn:  # conn이 None이 아닌 경우에만 close 호출
             conn.close()

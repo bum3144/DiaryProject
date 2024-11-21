@@ -1,3 +1,9 @@
+"""
+Tkinter 메뉴얼 : https://docs.python.org/3/library/tkinter.html
+tkinter: Tkinter 라이브러리를 사용해 화면창 구현
+ttk: Tkinter에서 제공하는 스타일 위젯을 사용
+filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사용)
+"""
 import tkinter as tk
 from tkinter import filedialog
 import os
@@ -6,12 +12,7 @@ from src.read_all_diaries import read_all_diaries
 from src.read_diary_by_date import read_diary_by_date
 from src.update_diary import update_diary
 from src.delete_diary import delete_diary
-"""
-Tkinter 메뉴얼 : https://docs.python.org/3/library/tkinter.html
-tkinter: Tkinter 라이브러리를 사용해 화면창 구현
-ttk: Tkinter에서 제공하는 스타일 위젯을 사용
-filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사용)
-"""
+
 def create_main_window():
     # 메인 창 생성
     root = tk.Tk() # Tkinter의 메인 창
@@ -40,43 +41,42 @@ def create_main_window():
         photo_filename = filedialog.askopenfilename() # 파일 선택 상자
         date = date_entry.get()
 
-        if title and date:
-            # insert_diary(title, content, photo_filename, date)
-            # photo_filename이 빈 문자열일 경우 insert_diary 함수에서 오류가 발생
-            if photo_filename and not os.path.isfile(photo_filename):
-                result_text.insert(tk.END, "사진 파일이 존재하지 않습니다.\n")
-                return
-            insert_diary(title, content, photo_filename, date)
-            result_text.insert(tk.END, "새 일기가 추가되었습니다!\n")
-            clear_fields()
-        else:
+        if not title or not date:
             result_text.insert(tk.END, "제목과 날짜는 필수 입력 항목입니다.\n")
+            return
+
+        # 사진 경로 유효성 검사
+        if photo_filename and not os.path.isfile(photo_filename):
+            result_text.insert(tk.END, "사진 파일이 존재하지 않습니다.\n")
+            return
+
+        try:
+            insert_diary(title, content, photo_filename, date)
+            result_text.insert(tk.END, "새 일기가 성공적으로 추가되었습니다!\n")
+            clear_fields()
+        except Exception as e:
+            result_text.insert(tk.END, f"일기 추가 중 오류 발생: {e}\n")
 
     def handle_read_all():
-        diaries = read_all_diaries() # 모든 일기 가져오는 함수 호출
         clear_result_text() # 기존 내용을 삭제
-        # for diary in diaries:
-        #     result_text.insert(tk.END, f"{diary}\n") # 조회 출력
-        if diaries:  # diaries가 None이 아니고 비어 있지 않을 때만 출력으로 수정
-            for diary in diaries:
-                result_text.insert(tk.END, f"{diary}\n")
-        else:
-            result_text.insert(tk.END, "저장된 일기가 없습니다.\n")
+        try:
+            result = read_all_diaries()  # 모든 일기 가져오는 함수 호출
+            result_text.insert(tk.END, result + "\n")
+        except Exception as e:
+            result_text.insert(tk.END, f"전체 일기 조회 중 오류 발생: {e}\n")
 
     def handle_read_by_date():
         date = date_entry.get() # 날짜 입력 값을 가져옴
-        if date:
-            diaries = read_diary_by_date(date) # 특정 날짜 일기 가져오는 함수
-            result_text.delete("1.0", tk.END)
-            # for diary in diaries:
-            #     result_text.insert(tk.END, f"{diary}\n")
-            if diaries:  # diaries가 None이 아니고 비어 있지 않을 때만 출력으로 수정
-                for diary in diaries:
-                    result_text.insert(tk.END, f"{diary}\n")
-            else:
-                result_text.insert(tk.END, "해당 날짜에 일기가 없습니다.\n")
-        else:
+        if not date:
             result_text.insert(tk.END, "날짜를 입력해주세요.\n")
+            return
+
+        clear_result_text()
+        try:
+            result = read_diary_by_date(date)  # 특정 날짜 일기 가져오는 함수 호출
+            result_text.insert(tk.END, result + "\n")
+        except Exception as e:
+            result_text.insert(tk.END, f"날짜별 조회 중 오류 발생: {e}\n")
 
     def handle_update():
         diary_id = id_entry.get() # 수정할 일기의 id
@@ -84,26 +84,33 @@ def create_main_window():
         new_content = content_text.get("1.0", tk.END).strip()
         new_date = date_entry.get()
 
-        if diary_id:
-            if not new_title and not new_content and not new_date:
-                result_text.insert(tk.END, "업데이트할 데이터를 입력해주세요.\n")
-                return
+        if not diary_id or not diary_id.isdigit():
+            result_text.insert(tk.END, "수정할 ID를 정확히 입력해주세요.\n")
+            return
 
-            update_diary(diary_id, new_title, new_content, new_date) # 일기를 수정하는 함수
-            result_text.insert(tk.END, f"ID {diary_id}의 일기가 업데이트되었습니다.\n")
+        if not new_title and not new_content and not new_date:
+            result_text.insert(tk.END, "수정할 데이터를 입력해주세요.\n")
+            return
+
+        try:
+            result = update_diary(diary_id, new_title, new_content, None, new_date)
+            result_text.insert(tk.END, result + "\n")
             clear_fields()
-        else:
-            result_text.insert(tk.END, "ID를 입력해주세요.\n")
+        except Exception as e:
+            result_text.insert(tk.END, f"일기 수정 중 오류 발생: {e}\n")
 
     def handle_delete():
         diary_id = id_entry.get()
-        # if diary_id:
-        if diary_id and diary_id.isdigit():  # 숫자인지 확인
-            delete_diary(diary_id) # 특정 ID에 해당하는 일기를 삭제 함수
-            result_text.insert(tk.END, f"ID {diary_id}의 일기가 삭제되었습니다.\n")
+        if not diary_id or not diary_id.isdigit():  # 숫자인지 확인
+            result_text.insert(tk.END, "삭제할 ID를 정확히 입력해주세요.\n")
+            return
+
+        try:
+            result = delete_diary(int(diary_id))  # 특정 ID에 해당하는 일기를 삭제
+            result_text.insert(tk.END, result + "\n")
             clear_fields()
-        else:
-            result_text.insert(tk.END, "삭제할 ID를 입력해주세요.\n")
+        except Exception as e:
+            result_text.insert(tk.END, f"일기 삭제 중 오류 발생: {e}\n")
 
     # UI 구성 요소
     # label 텍스트를 표시

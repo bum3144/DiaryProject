@@ -24,11 +24,7 @@ def read_all_diaries():
         # 글 출력
         if rows:
             headers = ["ID", "Title", "Content", "Photo Path", "Date"]
-            shortened_rows = [
-                (row[0], row[1], (row[2][:50] + '...') if len(row[2]) > 50 else row[2], row[3], row[4])
-                for row in rows
-            ]
-            print(tabulate(shortened_rows, headers=headers, tablefmt="grid"))
+            return tabulate(rows, headers=headers, tablefmt="grid")
         else:
             print("저장된 일기가 없습니다.")
 
