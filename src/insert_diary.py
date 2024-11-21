@@ -10,11 +10,16 @@ import os
 import shutil
 # shutil 파일 복사를 위한 모듈
 
+from src.database_connection import get_db_connection
+
 def insert_diary(title, content, photo_filename, date):
     conn = None  # conn 변수를 초기화
     try:
+
         # 이미지 저장할 images 폴더 경로
-        image_folder = os.path.join(os.getcwd(), "images")
+        # 루트 디렉토리 기준으로 images 폴더 경로 설정
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # src 상위 디렉토리
+        image_folder = os.path.join(project_root, "images")
         os.makedirs(image_folder, exist_ok=True)  # 폴더가 없으면 생성하도록 한다.
 
         # # 사진 파일이 저장될 경로를 설정
@@ -26,14 +31,21 @@ def insert_diary(title, content, photo_filename, date):
 
         # 사진 파일 복사
         # 사진 파일이 images 폴더로 복사되며, db에는 복사된 파일의 경로가 저장
-        if os.path.exists(source_photo_path):
-            shutil.copy(source_photo_path, dest_photo_path)
-        else:
-            print(f"사진 파일이 존재하지 않습니다: {source_photo_path}")
-            return
+        # if os.path.exists(source_photo_path):
+        #     shutil.copy(source_photo_path, dest_photo_path)
+        # else:
+        #     print(f"사진 파일이 존재하지 않습니다: {source_photo_path}")
+        #     return
+        if os.path.exists(photo_filename):
+            with open(photo_filename, "rb") as source, open(dest_photo_path, "wb") as destination:
+                destination.write(source.read())
 
         # db 연결
-        conn = sqlite3.connect("diary.db")
+        # conn = sqlite3.connect("../diary.db")
+        # cursor = conn.cursor()
+        # conn = get_db_connection()  # 수정된 부분
+        # cursor = conn.cursor()
+        conn = sqlite3.connect(os.path.join(project_root, "diary.db"))
         cursor = conn.cursor()
 
         # SQL
@@ -65,5 +77,9 @@ def insert_diary(title, content, photo_filename, date):
 
 # 테스트
 if __name__ == "__main__":
+    # 절대 경로를 사용
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # 샘플 데이터 삽입
-    insert_diary("사진 자동 복사 테스트", "사진 파일을 자동으로 복사합니다.", "./dog.jpg", "2024-11-21")
+    test_photo_path = os.path.join(project_root, "dog.jpg")
+    insert_diary("테스트 사진 자동 복사 테스트", "사진 파일을 자동으로 복사합니다.", test_photo_path, "2024-11-22")
+
