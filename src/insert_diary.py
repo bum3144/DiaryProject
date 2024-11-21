@@ -51,6 +51,11 @@ def insert_diary(title, content, photo_filename, date):
         conn = sqlite3.connect(os.path.join(project_root, "diary.db"))
         cursor = conn.cursor()
 
+        # # 마지막 ID를 조회하여 다음 ID 설정
+        # cursor.execute("SELECT MAX(id) FROM diary;")
+        # last_id = cursor.fetchone()[0] or 0  # None일 경우 0으로 처리
+        # next_id = last_id + 1
+
         # SQL
         insert_query = """
         INSERT INTO diary (title, content, photo, date)
