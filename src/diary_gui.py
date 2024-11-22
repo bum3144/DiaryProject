@@ -1,11 +1,5 @@
 """
 Tkinter 메뉴얼 : https://docs.python.org/3/library/tkinter.html
-tkinter: Tkinter 라이브러리를 사용해 화면창 구현
-ttk: Tkinter에서 제공하는 스타일 위젯을 사용
-filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사용)
-버튼 재배치: top_frame에 버튼들을 최상단에 배치, pack() 메서드를 사용하여 LEFT 방향으로 배치
-PIL: fillow 라이브러리를 사용해 이미지 처리
-tkcalender: 날짜를 선택할 수 있는 달력 모듈
 """
 import tkinter as tk
 import datetime
@@ -19,7 +13,6 @@ from src.read_diary_by_date import read_diary_by_date
 from src.update_diary import update_diary
 from src.delete_diary import delete_diary
 from src.read_diary_by_id import read_diary_by_id
-
 
 def create_main_window():
     # 메인 창 생성
@@ -277,13 +270,6 @@ def create_main_window():
         image_path_entry.delete(0, tk.END)
         image_path_entry.insert(0, photo_filename)
 
-    # def clear_fields():
-    #     id_entry.delete(0, tk.END)
-    #     title_entry.delete(0, tk.END)
-    #     content_text.delete("1.0", tk.END)
-    #     date_entry.delete(0, tk.END)
-    #     image_path_entry.delete(0, tk.END)
-
     def clear_result_text():
         result_text.delete("1.0", tk.END)
 
@@ -359,10 +345,6 @@ def create_main_window():
     title_entry = tk.Entry(main_frame, width=60)
     title_entry.grid(row=1, column=1, padx=5, pady=5)
 
-    # tk.Label(main_frame, text="내용:").grid(row=2, column=0, padx=5, pady=5)
-    # content_text = tk.Text(main_frame, width=50, height=5)
-    # content_text.grid(row=2, column=1, padx=5, pady=5)
-
     # 내용 필드에 스크롤바 추가
     tk.Label(main_frame, text="내용:").grid(row=2, column=0, padx=5, pady=5)
     # Frame 생성 (Text와 Scrollbar를 함께 배치)
@@ -414,7 +396,6 @@ def create_main_window():
     result_text.bind("<Leave>", on_result_leave)  # 마우스가 위젯에서 나갈 때 커서 복원
 
     root.mainloop()
-
 
 if __name__ == "__main__":
     create_main_window()

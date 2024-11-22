@@ -1,12 +1,8 @@
 # CRUD 기능 구현
 '''
-Create: 새로운 일기 추가
 * Read: 저장된 일기를 조회
-Update: 기존 일기를 수정
-Delete: 일기를 삭제
 '''
 import sqlite3
-from tabulate import tabulate
 from src.database_connection import get_db_connection
 
 def read_diary_by_date(date):
@@ -24,7 +20,6 @@ def read_diary_by_date(date):
     finally:
         if conn:
             conn.close()
-
 
 # # 테스트 코드
 # 빠른 테스트를 위해 하단에 배치하여 개발 중 바로 바로 테스트 하기위해 유지

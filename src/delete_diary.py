@@ -1,8 +1,5 @@
 # CRUD 기능 구현
 '''
-Create: 새로운 일기 추가
-Read: 저장된 일기를 조회
-Update: 기존 일기를 수정
 * Delete: 일기를 삭제
 '''
 import sqlite3
@@ -100,8 +97,6 @@ def delete_diaries_by_date(date):
     finally:
         if conn:  # conn이 None이 아닌 경우에만 close 호출
             conn.close()
-
-
 
 # 테스트 실행
 # 테스트 코드

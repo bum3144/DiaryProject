@@ -8,15 +8,10 @@ Delete: 일기를 삭제
 import sqlite3
 import os
 import datetime  # 타임스탬프 생성에 사용
-import shutil
-# shutil 파일 복사를 위한 모듈
-
-from src.database_connection import get_db_connection
 
 def insert_diary(title, content, photo_filename, date):
     conn = None  # conn 변수를 초기화
     try:
-
         # 이미지 저장할 images 폴더 경로
         # 루트 디렉토리 기준으로 images 폴더 경로 설정
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # src 상위 디렉토리
@@ -42,10 +37,6 @@ def insert_diary(title, content, photo_filename, date):
             dest_photo_path = ""
 
         # db 연결
-        # conn = sqlite3.connect("../diary.db")
-        # cursor = conn.cursor()
-        # conn = get_db_connection()  # 수정된 부분
-        # cursor = conn.cursor()
         conn = sqlite3.connect(os.path.join(project_root, "diary.db"))
         cursor = conn.cursor()
 
@@ -71,21 +62,4 @@ def insert_diary(title, content, photo_filename, date):
         if conn:
             conn.close()
 
-
-# # 테스트 코드
-# 빠른 테스트를 위해 하단에 배치하여 개발 중 바로 바로 테스트 하기위해 유지
-# 이 아래 내부의 코드는 독립 실행 시에만 작동하므로 안전하게 사용가능
-# 다른 파일에서 이 코드를 import하여 사용할 때는 테스트 코드는 실행되지 않는다.
-
-# if __name__ == "__main__":
-#     # 샘플 데이터 삽입
-#     insert_diary("나의 일기 TEST2", "나의 귀여운 강아지2를 또 소개합니다.", "./images/dog.jpg", "2024-11-20")
-
-# 테스트
-if __name__ == "__main__":
-    # 절대 경로를 사용
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # 샘플 데이터 삽입
-    test_photo_path = os.path.join(project_root, "dog.jpg")
-    insert_diary("타임스탬프 테스트2", "사진 파일에 타임스탬프 추가2.", test_photo_path, "2024-11-23")
 
