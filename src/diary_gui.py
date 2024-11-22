@@ -4,6 +4,8 @@ tkinter: Tkinter 라이브러리를 사용해 화면창 구현
 ttk: Tkinter에서 제공하는 스타일 위젯을 사용
 filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사용)
 버튼 재배치: top_frame에 버튼들을 최상단에 배치, pack() 메서드를 사용하여 LEFT 방향으로 배치
+PIL: fillow 라이브러리를 사용해 이미지 처리
+tkcalender: 날짜를 선택할 수 있는 달력 모듈
 """
 import tkinter as tk
 import datetime
@@ -23,7 +25,7 @@ def create_main_window():
     # 메인 창 생성
     root = tk.Tk()
     root.title("Diary Application")
-    root.geometry("800x600") # 창 크기 확장
+    root.geometry("800x700") # 창 크기 확장
 
     # 최상단 버튼 프레임 생성
     top_frame = tk.Frame(root)
@@ -49,29 +51,37 @@ def create_main_window():
     def show_preview(image_path):
         """이미지 미리보기 표시"""
         try:
-            if not image_path:  # 이미지 경로가 비어 있으면 미리보기를 초기화
+            if not image_path:
                 clear_preview()
                 return
 
-            # 디버깅: 이미지 경로 확인
-            print(f"디버깅: 이미지 경로 = {image_path}")
-
-            # 이미지 열기 및 썸네일 생성
             img = Image.open(image_path)
-            img.thumbnail((200, 200))  # 썸네일 크기 지정
+
+            # 이미지 회전 정보 처리 (EXIF)
+            try:
+                exif = img._getexif()
+                if exif:
+                    orientation_key = 274
+                    if orientation_key in exif:
+                        orientation = exif[orientation_key]
+                        if orientation == 3:
+                            img = img.rotate(180, expand=True)
+                        elif orientation == 6:
+                            img = img.rotate(270, expand=True)
+                        elif orientation == 8:
+                            img = img.rotate(90, expand=True)
+            except AttributeError:
+                pass
+
+            # 이미지 크기 및 비율 조정
+            img.thumbnail((200, 300))  # 가로 최대 200px, 세로 최대 300px로 제한
             img = ImageTk.PhotoImage(img)
 
-            # Label에 이미지 설정
+            # 이미지 미리보기 업데이트
             image_label.config(image=img)
-            image_label.image = img  # 참조 유지
-
-            # 프레임 테두리 추가
-            image_frame.config(relief="solid")  # 테두리를 다시 추가하여 프레임을 보이게 설정
-
-            # 디버깅: 이미지가 제대로 설정되었는지 확인
-            print("이미지 미리보기 설정 완료.")
+            image_label.image = img
+            image_frame.config(relief="solid")
         except Exception as e:
-            # 오류 발생 시 출력
             print(f"이미지 로드 오류: {e}")
             clear_preview()
 
@@ -107,15 +117,16 @@ def create_main_window():
         content = content_text.get("1.0", tk.END).strip()
         photo_filename = image_path_entry.get()
         date = date_entry.get()
-        if not date:
+        if not date:  # 날짜 필드가 비어 있을 경우 현재 날짜로 자동 설정
             date = datetime.datetime.now().strftime("%Y-%m-%d")
+            date_entry.insert(0, date)  # 비어 있는 경우 날짜 필드에 추가
+
         if not title or not date:
-            result_text.insert(tk.END, f"제목과 내용은 필수 입력 항목입니다.(날짜 미입력시 오늘 날짜 자동저장)\n")
+            result_text.insert(tk.END, f"제목과 내용은 필수 입력 항목입니다.(날짜 미입력 시 오늘 날짜 자동 저장)\n")
             return
         try:
             insert_diary(title, content, photo_filename, date)
             result_text.insert(tk.END, f"새 일기가 성공적으로 추가되었습니다!\n")
-
             clear_fields()
         except Exception as e:
             result_text.insert(tk.END, f"일기 추가 중 오류 발생: {e}\n")
@@ -371,7 +382,7 @@ def create_main_window():
     date_entry = tk.Entry(main_frame, width=20)
     date_entry.grid(row=3, column=1, padx=5, pady=5, sticky="w") # Entry 위젯 클릭 시 달력 열기 함수 실행
     date_entry.bind("<Button-1>", lambda event: open_calendar()) # 클릭 이벤트와 open_calendar 함수 연결
-    tk.Button(main_frame, text="날짜 선택", command=open_calendar).grid(row=3, column=2, padx=5, pady=5)
+    # tk.Button(main_frame, text="날짜 선택", command=open_calendar).grid(row=3, column=2, padx=5, pady=5)
 
     tk.Label(main_frame, text="이미지 경로:").grid(row=4, column=0, padx=5, pady=5)
     # 이미지 경로 Entry (클릭 시 select_image 실행)
@@ -379,14 +390,29 @@ def create_main_window():
     image_path_entry.grid(row=4, column=1, padx=5, pady=5)
     # Entry 위젯 클릭 시 이미지 선택 함수 실행
     image_path_entry.bind("<Button-1>", lambda event: select_image())  # 클릭 이벤트와 select_image 함수 연결
-    tk.Button(main_frame, text="이미지 찾기", command=select_image).grid(row=4, column=2, padx=5, pady=5)
+    # tk.Button(main_frame, text="이미지 찾기", command=select_image).grid(row=4, column=2, padx=5, pady=5)
 
     # 결과 출력 텍스트 창
-    result_text = tk.Text(main_frame, width=100, height=15)
-    result_text.grid(row=5, column=0, columnspan=3, padx=5, pady=5)
-    result_text.bind("<Button-1>", on_result_click) # 클릭 이벤트 처리
+    # 결과 출력 프레임 생성 (스크롤바 포함)
+    result_frame = tk.Frame(main_frame)
+    result_frame.grid(row=5, column=0, columnspan=3, padx=5, pady=5, sticky="nsew")  # 전체 열을 차지하도록 설정
+
+    # Text 위젯 생성
+    result_text = tk.Text(result_frame, width=100, height=15, wrap="word")  # wrap="word"로 줄 단위 줄바꿈
+    result_text.pack(side="left", fill="both", expand=True)
+
+    # Scrollbar 생성 및 Text와 연결
+    result_scrollbar = tk.Scrollbar(result_frame, command=result_text.yview)
+    result_scrollbar.pack(side="right", fill="y")
+
+    # Text와 Scrollbar의 스크롤 연동
+    result_text.config(yscrollcommand=result_scrollbar.set)
+
+    # 결과창 이벤트 처리
+    result_text.bind("<Button-1>", on_result_click)  # 클릭 이벤트 처리
     result_text.bind("<Enter>", on_result_enter)  # 마우스가 위젯에 들어올 때 커서 변경
     result_text.bind("<Leave>", on_result_leave)  # 마우스가 위젯에서 나갈 때 커서 복원
+
     root.mainloop()
 
 
