@@ -8,7 +8,8 @@ filedialog: 파일 선택 대화 상자를 제공 (사진 첨부 기능에 사�
 import tkinter as tk
 import datetime
 from tkinter import filedialog
-from tkinter import messagebox  # 경고 창을 위한 모듈
+from PIL import Image, ImageTk
+from tkinter import messagebox  # 경고 창을 위한 모듈 추가
 from tkcalendar import Calendar
 from src.insert_diary import insert_diary
 from src.read_all_diaries import read_all_diaries
@@ -22,7 +23,7 @@ def create_main_window():
     # 메인 창 생성
     root = tk.Tk()
     root.title("Diary Application")
-    root.geometry("800x600")
+    root.geometry("800x600") # 창 크기 확장
 
     # 최상단 버튼 프레임 생성
     top_frame = tk.Frame(root)
@@ -31,6 +32,58 @@ def create_main_window():
     # 입력 필드와 결과 출력 프레임
     main_frame = tk.Frame(root)
     main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+    # 이미지 미리보기 프레임
+    image_frame = tk.Frame(main_frame, width=200, height=200, relief="solid", bd=1) # 초기 테두리를 flat으로 설정
+    image_frame.grid(row=1, column=2, rowspan=4, padx=10, pady=5, sticky="n")
+    image_frame.grid_propagate(False)  # 고정된 크기 유지
+    image_label = tk.Label(image_frame)
+    image_label.pack(fill=tk.BOTH, expand=True)
+
+    def clear_preview():
+        """이미지 미리보기 초기화"""
+        image_label.config(image='')
+        image_label.image = None  # 참조 제거
+        image_frame.config(relief="flat")  # 이미지 없을때 테두리를 제거하여 프레임이 안보이게 설정
+
+    def show_preview(image_path):
+        """이미지 미리보기 표시"""
+        try:
+            if not image_path:  # 이미지 경로가 비어 있으면 미리보기를 초기화
+                clear_preview()
+                return
+
+            # 디버깅: 이미지 경로 확인
+            print(f"디버깅: 이미지 경로 = {image_path}")
+
+            # 이미지 열기 및 썸네일 생성
+            img = Image.open(image_path)
+            img.thumbnail((200, 200))  # 썸네일 크기 지정
+            img = ImageTk.PhotoImage(img)
+
+            # Label에 이미지 설정
+            image_label.config(image=img)
+            image_label.image = img  # 참조 유지
+
+            # 프레임 테두리 추가
+            image_frame.config(relief="solid")  # 테두리를 다시 추가하여 프레임을 보이게 설정
+
+            # 디버깅: 이미지가 제대로 설정되었는지 확인
+            print("이미지 미리보기 설정 완료.")
+        except Exception as e:
+            # 오류 발생 시 출력
+            print(f"이미지 로드 오류: {e}")
+            clear_preview()
+
+    def select_image():
+        """이미지 선택"""
+        photo_filename = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.png;*.jpeg;*.gif")])
+        image_path_entry.delete(0, tk.END)
+        image_path_entry.insert(0, photo_filename)
+        if photo_filename:
+            show_preview(photo_filename)
+        else:
+            clear_preview()
 
     # 초기화 함수
     def clear_fields():
@@ -43,6 +96,10 @@ def create_main_window():
         date_entry.delete(0, tk.END)  # 날짜 필드 초기화
         image_path_entry.delete(0, tk.END)  # 이미지 경로 필드 초기화
         result_text.delete("1.0", tk.END)  # 결과 텍스트 창 초기화
+        clear_preview()
+
+    # **처음 창을 열었을때 이미지가 없는데 빈테두리가 보여짐 - 초기화로 해결**
+    clear_preview()
 
     # 버튼 함수 정의
     def handle_insert():
@@ -65,9 +122,16 @@ def create_main_window():
 
     def handle_read_all():
         try:
-            clear_result_text()
-            diaries = read_all_diaries()
+            clear_result_text() # 결과창 초기화
+            diaries = read_all_diaries() # db에서 모든 일기 읽기
+
+            # 디버깅용 출력
+            print("디버깅: diaries =", diaries)
+
             if diaries:
+                # 텍스트 위젯 상태를 NORMAL로 설정
+                result_text.config(state=tk.NORMAL)
+
                 # 테이블 헤더 추가
                 result_text.insert(tk.END, "=== 저장된 일기 목록 ===\n")
                 result_text.insert(tk.END, f"{'ID':<15}{'제목':<55}{'날짜':<30}\n")
@@ -77,10 +141,18 @@ def create_main_window():
                 for diary in diaries:
                     diary_id, title, _, _, date = diary
                     result_text.insert(tk.END, f"{diary_id:<15}{title[:53]:<55}{date:<30}\n")  # 제목은 53자로 자름
+
+                # GUI 업데이트 강제
+                root.update_idletasks()
             else:
                 result_text.insert(tk.END, "저장된 일기가 없습니다.\n")
+
+                # 텍스트 위젯 상태를 다시 DISABLED로 설정
+                result_text.config(state=tk.DISABLED)
         except Exception as e:
+            # 예외가 발생하면 오류 메시지 출력
             result_text.insert(tk.END, f"전체 일기 조회 중 오류 발생: {e}\n")
+            print("디버깅: 오류 발생 =", e)
 
     def handle_read_by_date():
         # 달력 창을 열어 날짜를 선택하게 함
@@ -241,12 +313,21 @@ def create_main_window():
                 content_text.delete("1.0", tk.END)
                 content_text.insert("1.0", diary_data['content'])
 
+                image_path = diary_data['photo']
                 image_path_entry.delete(0, tk.END)
-                image_path_entry.insert(0, diary_data['photo'])
+                image_path_entry.insert(0, image_path)
+
+                # 이미지 미리보기 업데이트
+                if image_path:
+                    show_preview(image_path)
+                else:
+                    clear_preview()
             else:
                 result_text.insert(tk.END, "선택한 데이터의 세부 정보를 찾을 수 없습니다.\n")
+                clear_preview()
         except Exception as e:
             result_text.insert(tk.END, f"데이터 파싱 중 오류 발생: {e}\n")
+            clear_preview()
 
     # 버튼 추가
     tk.Button(top_frame, text="새 일기 저장", fg="green", command=handle_insert).pack(side=tk.LEFT, padx=5, pady=5)
