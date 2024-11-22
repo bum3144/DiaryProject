@@ -20,10 +20,13 @@ Diary Application은 Tkinter 기반으로 제작된 개인 일기 관리 프로�
 
 ### 2. 배포 파일 구성
 다운로드한 배포 폴더에는 다음 파일 및 폴더가 포함되어 있어야 합니다:
+```html
 배포폴더/ 
 ├── diary_gui.exe # 실행 파일 
 ├── diary.db # 데이터베이스 파일 
 └── images/ # 이미지 저장 폴더
+```
+
 
 
 ### 3. 실행
@@ -59,6 +62,7 @@ Diary Application은 Tkinter 기반으로 제작된 개인 일기 관리 프로�
 ---
 
 ## 📂 프로젝트 구조
+```html
 DiaryProject/ 
 ├── src/ # 소스 코드 폴더 
 │ ├── diary_gui.py # GUI 실행 파일 
@@ -73,7 +77,7 @@ DiaryProject/
 │ └── images/ # 이미지 저장 폴더 
 ├── README.md # 프로젝트 설명 파일 
 └── requirements.txt # 프로젝트 의존성 목록
-
+```
 
 ---
 
@@ -105,24 +109,31 @@ SQLite를 사용하여 로컬 데이터베이스에 데이터를 저장합니다
 1️⃣ 의존성 설치
 프로젝트 실행 전에 필수 패키지를 설치해야 합니다. 
 아래 명령어를 사용하여 requirements.txt에 정의된 의존성을 설치하세요:
-
+```shell
 pip install -r requirements.txt
+```
 
 2️⃣ 개발 환경에서 실행
 개발 환경에서 프로그램을 실행하려면 다음 명령어를 입력하세요:
 
+```shell
 python src/diary_gui.py
+```
 
 3️⃣ 배포
 독립 실행 파일로 배포하려면 PyInstaller를 사용하세요. 
 아래 명령어를 실행하여 .exe 파일을 생성할 수 있습니다:
-
+```shell
 pyinstaller --clean --onefile --noconsole \
 --add-data "diary.db;." \
 --add-data "images;images" \
 --add-data "src;src" \
 src/diary_gui.py
+```
+---
 
 📧 문의
+---
  이메일:  bum3144@gmail.com
+---
  GitHub: https://github.com/bum3144
