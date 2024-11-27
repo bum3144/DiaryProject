@@ -74,7 +74,9 @@ DiaryProject/
 ├── dist/ # 배포 폴더 
 │ ├── diary_gui.exe # 실행 파일 
 │ ├── diary.db # 데이터베이스 파일 
-│ └── images/ # 이미지 저장 폴더 
+│ └── images/ # 이미지 저장 폴더  
+├── images/ # 실제 이미지 저장 폴더 
+├── diary.db # 실제 데이터베이스 파일 
 ├── README.md # 프로젝트 설명 파일 
 └── requirements.txt # 프로젝트 의존성 목록
 ```
